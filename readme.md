@@ -1,192 +1,243 @@
-# Startup Exit Prediction: Acquired vs Closed
+# Startup Exit Prediction: Acquired vs. Closed
 
-## Project Overview
-
-This project aims to identify the factors that differentiate startups that were eventually **acquired** from those that were **closed**. The objective is to build an analytics-driven machine learning solution that combines exploratory data analysis, statistical analysis, feature engineering, predictive modeling, and explainable AI.
-
-Unlike many startup success prediction projects, this project focuses only on **terminal business outcomes** (Acquired vs Closed), making the classification problem well-defined and suitable for supervised learning.
+> *Can data tell us which startups survive and which ones disappear? This project set out to find the answer.*
 
 ---
 
-# Data Cleaning
+## Overview
 
-The original Crunchbase investment dataset required several preprocessing steps before exploratory analysis and model development.
+Every year, thousands of startups compete for funding, customers, and a place in the market. Most will eventually reach a crossroads — some get acquired by larger companies, validating years of hard work, while others quietly shut their doors. What separates these two outcomes?
 
-## 1. Column Name Standardization
+This project explores that exact question. Using a real-world dataset of **54,294 venture-capital-backed startups** sourced from Crunchbase, we built an end-to-end machine learning pipeline that identifies the characteristics most strongly associated with a startup being **acquired** versus **closed**.
 
-Leading and trailing whitespaces were removed from all column names to ensure consistent column referencing throughout the project.
+Unlike many startup analysis projects that try to predict "success" broadly, this project focuses only on **terminal business outcomes** — companies that have definitively reached the end of their journey, either through acquisition or closure. This makes the classification task well-defined, interpretable, and practically meaningful.
 
-```python
-df.columns = df.columns.str.strip()
+The project combines **exploratory data analysis**, **statistical reasoning**, **feature engineering**, **predictive modeling**, and **explainable AI** to answer three fundamental questions about startup survival.
+
+---
+
+## Repository Structure
+
+```
+Startup-Closing-Analysis-/
+│
+├── data/
+│   ├── investments_VC.csv          # Raw Crunchbase VC investment dataset (54,294 records)
+│   ├── investments_VC_new.csv      # Cleaned and filtered dataset
+│   └── model_df.csv                # Final feature-engineered dataset for modeling
+│
+├── Scripts/
+│   ├── data_cleaning.ipynb         # Step 1 — Data loading, deduplication, type casting & quality validation
+│   ├── data_eda.ipynb              # Step 2 — Exploratory data analysis & business insights
+│   ├── data_preprocessing.ipynb    # Step 3 — Encoding, scaling, train/test split
+│   └── feature_Engineering.ipynb  # Step 4 — Market sector consolidation & derived features
+│
+├── main.ipynb                      # End-to-end pipeline: model training, evaluation & explainability
+├── requirements.txt                # Python dependencies
+└── README.md                       # Project documentation (this file)
 ```
 
 ---
 
-## 2. Initial Data Inspection
+## System Requirements
 
-The dataset structure was examined using:
+| Requirement | Recommended Version |
+|---|---|
+| Python | 3.11.x |
+| Jupyter Notebook / JupyterLab | Latest |
+| pandas | >= 2.0 |
+| scikit-learn | >= 1.3 |
+| xgboost | >= 2.0 |
+| matplotlib / seaborn | Latest |
+| numpy | >= 1.24 |
 
-* Dataset shape
-* Data types
-* Summary information
-* Initial records
-
-This helped identify missing values, incorrect data types, and potential data quality issues.
-
----
-
-## 3. Duplicate Removal
-
-Duplicate observations were checked and removed to avoid redundant information during analysis and model training.
+> **Note:** A virtual environment (`venv/`) is included in the repository. It is recommended to activate it before running any notebooks.
 
 ---
 
-## 4. Removal of Non-Informative Columns
+## How to Run the Code
 
-The following columns were removed:
+Follow these steps in order to reproduce all results.
 
-| Column       | Reason                                                              |
-| ------------ | ------------------------------------------------------------------- |
-| permalink    | Unique company identifier                                           |
-| name         | Company name has extremely high cardinality and no predictive value |
-| homepage_url | Unique website URL with no analytical significance                  |
+### 1. Clone the Repository
 
-These variables do not contribute meaningful information for predictive modeling and may introduce unnecessary noise.
+```bash
+git clone https://github.com/GaUrAnGjJ/Startup-Closing-Analysis-.git
+cd Startup-Closing-Analysis-
+```
 
----
+### 2. Activate the Virtual Environment
 
-## 5. Missing Value Assessment
+```bash
+# Windows
+venv\Scripts\activate
 
-Missing values were quantified for every feature.
+# macOS / Linux
+source venv/bin/activate
+```
 
-At this stage, missing values were **documented but not immediately imputed**, since the appropriate treatment depends on the exploratory analysis and feature engineering phase.
+### 3. Install Dependencies
 
----
+```bash
+pip install -r requirements.txt
+```
 
-## 6. Target Variable Definition
+### 4. Run the Notebooks in Order
 
-The original dataset contained four categories:
+Execute each notebook sequentially to reproduce the full pipeline:
 
-* acquired
-* closed
-* operating
-* missing (NaN)
+| Step | Notebook | Purpose |
+|------|----------|---------|
+| 1 | `Scripts/data_cleaning.ipynb` | Clean raw data, remove duplicates, fix data types |
+| 2 | `Scripts/data_eda.ipynb` | Explore distributions and identify patterns |
+| 3 | `Scripts/feature_Engineering.ipynb` | Engineer market sectors and create model features |
+| 4 | `Scripts/data_preprocessing.ipynb` | Encode, scale, and split data |
+| 5 | `main.ipynb` | Train models, evaluate performance, and interpret results |
 
-For this project, only startups with known terminal outcomes were retained.
-
-### Included
-
-* acquired
-* closed
-
-### Excluded
-
-* operating
-* missing status
-
-Reasons:
-
-* Operating companies have not yet reached a final business outcome.
-* Missing status records cannot be used for supervised learning because the target label is unavailable.
-
-A separate copy of the missing-status observations was preserved for potential future inference.
+> **Note:** All steps can also be run end-to-end from `main.ipynb`, which orchestrates the complete pipeline and contains model comparison tables and feature importance outputs.
 
 ---
 
-## 7. Data Type Conversion
+## The Data Journey
 
-The following columns were converted into datetime format:
+### Where It All Begins
 
-* founded_at
-* first_funding_at
-* last_funding_at
+The raw dataset contained **54,294 startup records** with 39 features — spanning funding amounts, funding types, geographic data, market categories, founding dates, and more. Before any analysis could begin, the data needed to be thoroughly examined, corrected, and shaped into something trustworthy.
 
-The `funding_total_usd` column was cleaned and converted into a numeric data type after removing formatting inconsistencies.
+### Cleaning and Preparation
 
----
+**Standardization** came first — column names had hidden leading and trailing whitespace that would cause silent bugs downstream. A single line of code resolved this, but it underscored an important principle: never assume your data is what it appears to be.
 
-## 8. Data Quality Validation
+**Identifier columns** (`permalink`, `name`, `homepage_url`) were dropped early. These columns are unique per record, carry no predictive signal, and would only inflate model complexity without adding value.
 
-Several logical consistency checks were performed.
+**Temporal anomalies** revealed something interesting: 447 companies had a recorded first funding date before their official founding date. Rather than blindly deleting these records, we investigated. Most reflected a real-world phenomenon — startups often receive angel or seed funding before formal legal incorporation. Only records with a single funding round where the funding gap exceeded five years were treated as genuine errors and removed.
 
-### Funding Amount
+**Target variable scoping** was critical. The dataset contained four status categories:
 
-* Negative funding amounts
+- `acquired` — reached a successful exit
+- `closed` — shut down operations
+- `operating` — still active (future unknown)
+- `NaN` — unknown status
 
-### Funding Rounds
-
-* Negative funding rounds
-
-### Temporal Consistency
-
-The following temporal relationships were validated:
-
-* First funding date before company founding date
-* Last funding date before first funding date
-* Invalid future dates
+For a supervised learning task, we need known, final outcomes. We retained only **acquired** (3,692 companies) and **closed** (2,603 companies) records — a total of **6,295 labeled examples** — and preserved the rest for potential future inference.
 
 ---
 
-## 9. Investigation of Temporal Anomalies
+## What the Data Revealed
 
-A total of **447 companies** were identified where the recorded first funding date occurred before the recorded founding date.
+### The Funding Story
 
-Rather than removing all such observations, each anomaly was investigated.
+Exploratory analysis uncovered a clear and consistent pattern: **acquired startups raise substantially more money than those that close**. This relationship held across total funding amounts, number of funding rounds, and funding duration.
 
-Most companies exhibited small differences (typically a few months), which are plausible because startups often receive angel or seed funding before formal legal incorporation.
+The funding distribution is highly right-skewed — most startups raise modest amounts through one or two rounds, while a small number attract enormous investments. Approximately **60% of startups raised funding only once**, and **81% raised funding at most twice**. Only **0.1%** ever reached 10 or more funding rounds.
 
-Only records satisfying **all** of the following conditions were treated as true anomalies:
+Yet it is precisely those multi-round companies that disproportionately end up acquired. Sustained fundraising signals investor confidence, operational longevity, and market traction — all of which are strongly tied to eventual acquisition.
 
-* Single funding round
-* First funding date equals last funding date
-* Funding occurred more than five years before the recorded founding date
+### The Market Sector Problem
 
-These records were considered internally inconsistent and removed from the dataset.
+The raw dataset contained over **350 distinct market categories** — far too many for a model to learn meaningful patterns from. A startup labeled "Social Commerce" and another labeled "E-commerce" are fundamentally similar, but the model would treat them as entirely unrelated.
 
-This evidence-based approach preserves realistic startup funding behavior while eliminating obvious data quality errors.
+To address this, we applied domain knowledge to consolidate all 350+ categories into **17 coherent business sectors** (plus an "Other" bucket accounting for 8.44% of miscellaneous entries). Groups such as Software, SaaS, Cloud Computing, and Enterprise Software were merged into a single **Software & Cloud** sector. This reduced noise, improved interpretability, and gave the model a more meaningful signal to learn from.
 
 ---
 
-# Current Project Status
+## Model Development and Selection
 
-✔ Data loading
+### Candidates Evaluated
 
-✔ Column name standardization
+Three classification models were trained and evaluated using **stratified 5-fold cross-validation**:
 
-✔ Duplicate inspection
+1. **Logistic Regression** — interpretable, stable, coefficient-based
+2. **Random Forest** — ensemble of decision trees
+3. **XGBoost** — gradient boosting, strong performance on tabular data
 
-✔ Removal of identifier columns
+### Experiment Results Comparison Summary
 
-✔ Missing value assessment
+The following table presents the full evaluation results for all three models trained using stratified 5-fold cross-validation, ranked by ROC-AUC:
 
-✔ Target variable definition
+| Rank | Model | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
+|------|-------|----------|-----------|--------|----------|---------|
+| 1 | **Logistic Regression** | **0.6966** | **0.6865** | 0.4885 | **0.5708** | **0.7366** |
+| 2 | XGBoost | 0.6910 | 0.6329 | **0.6000** | **0.6160** | 0.7325 |
+| 3 | Random Forest | 0.6759 | 0.6167 | 0.5692 | 0.5920 | 0.7071 |
 
-✔ Data type conversion
+**Key finding:** Logistic Regression achieved the **highest ROC-AUC (0.7366)**, **highest accuracy (69.66%)**, and **highest precision (0.6865)**, making it the best overall discriminator between acquired and closed startups. XGBoost achieved a higher recall and F1-score by predicting more acquisitions, but at the cost of more false positives and lower overall discrimination. Random Forest ranked last across all five metrics and was eliminated from further consideration.
 
-✔ Funding amount cleaning
+### Why Logistic Regression Was Selected
 
-✔ Data quality validation
+The project's core objective was not only to predict outcomes but to **understand** them. Logistic Regression provides direct, coefficient-based explanations — each feature's contribution is transparent and interpretable. For an analytics project centered on understanding *why* certain startups get acquired, this interpretability made Logistic Regression the appropriate final model.
 
-✔ Temporal anomaly detection
-
-✔ Removal of confirmed anomalous records
+Hyperparameter tuning delivered a modest but consistent improvement across all metrics, and the tuned Logistic Regression was selected as the **final model**.
 
 ---
 
-# Business Questions
+## Research Questions and Findings
 
-Q. Do startup typically raise multiple funding rounds, or do most rely on only one or two rounds of funding??
-The distribution is highly right skewed. which indicates that most of the startsup raise small rounds of funds , where small numbers of startups raise high rounds of funds. The median of funding round is 1, but median is 1.77 which means distribution is influenced by outfliers.
-Approximately 60% of the startups are raised funding only once and 81% of the startups are raised funding twice. Only 0.1% of the startsups are raised funding 10 or more rounds. 
+---
 
-# Key Business Insights from Exploratory Data Analysis
+### Q. Which startup characteristics are most strongly associated with successful acquisition?
 
-*Acquired startups consistently raise substantially more funding than startups that eventually close. This suggests that access to capital is strongly associated with successful startup outcomes.
+**A.** The logistic regression model identified **Market Sector** as the most influential group of characteristics, indicating that the industry in which a startup operates is strongly associated with whether it is ultimately acquired or closed.
 
-* Startup funding is not distributed evenly. A small number of companies attract exceptionally large investments, while the majority raise relatively modest amounts.
+Beyond sector, the following characteristics were also positively associated with acquisition:
 
-* Startups that progress through multiple funding rounds are acquired more frequently than those that stop after one or two rounds, indicating that sustained fundraising is associated with better long-term outcomes.
+- **Higher total funding** — more capital raised correlates with better long-term outcomes
+- **Longer fundraising duration** — sustained investor engagement signals continued confidence
+- **Venture funding** — receiving venture capital is a strong positive indicator of acquisition
 
-* Funding characteristics emerge as one of the most informative aspects of startup performance, highlighting the importance of a company's fundraising journey when evaluating its future outcome.
+These findings suggest that acquisition is driven by a combination of *what a startup does* (market sector) and *how well-funded it is* (capital access and investor backing).
 
+---
 
+### Q. Which funding type has the strongest association with acquisition?
+
+**A.** Among all funding mechanisms, **venture capital** has the strongest association with acquisition.
+
+It held the **largest relative contribution among all funding-type variables (2.72%)** and carried a **negative logistic regression coefficient for closure** — meaning that venture-backed startups had lower odds of shutting down and, conversely, higher odds of being acquired.
+
+This relationship held true after controlling for total funding amount, market sector, fundraising duration, and all other funding sources. Venture capital is not simply a proxy for more money — it carries signal about investor validation, board oversight, strategic networks, and the pressure to reach a liquidity event, all of which make acquisition a more likely outcome.
+
+---
+
+### Q. Does market sector matter?
+
+**A.** Yes — decisively.
+
+The analysis indicates that a startup's market sector is one of the **single strongest characteristics** associated with whether it is acquired or closed. The logistic regression model consistently assigned substantial weight to sector variables, suggesting that industry choice plays a fundamental role in startup outcomes.
+
+**Market sectors most strongly associated with acquisition:**
+
+| Rank | Sector |
+|------|--------|
+| 1 | AI & Data |
+| 2 | Security |
+| 3 | Financial Services |
+| 4 | Travel & Hospitality |
+| 5 | Education |
+
+These sectors share common traits: they attract strategic acquirers with significant capital, they contain intellectual property worth acquiring, and they operate in markets where consolidation is a well-established growth strategy.
+
+---
+
+## Conclusion
+
+What began as a question — *can we predict which startups get acquired?* — evolved into a thorough analytical journey through data cleaning, exploratory analysis, feature engineering, and machine learning.
+
+The answer is nuanced but clear: **certain characteristics do systematically differentiate startups that get acquired from those that close**. Market sector, venture capital backing, total funding raised, and fundraising duration are the most powerful signals. A startup operating in AI & Data or Security, backed by venture capital, with sustained multi-round fundraising, is meaningfully more likely to be acquired than one lacking these characteristics.
+
+The final tuned Logistic Regression model achieved a **ROC-AUC of 0.7396** — a meaningful result given the inherent unpredictability of startup outcomes, where timing, macroeconomic conditions, and competitive dynamics always play a role that no model can fully capture.
+
+This project demonstrates that even with a focused dataset and an interpretable model, data science can extract actionable insight from what might otherwise appear to be a highly unpredictable domain.
+
+---
+
+## Data Source
+
+- **Dataset:** Crunchbase VC Investments Dataset
+- **Source file:** `data/investments_VC.csv`
+- **Records:** 54,294 startups
+- **Encoding:** Latin-1
+
+---
+
+*Built with Python, scikit-learn, XGBoost, and Jupyter.*
