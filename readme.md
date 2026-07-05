@@ -149,9 +149,7 @@ The dashboard enables stakeholders to:
 - Compare market sector distributions between acquired and closed startups
 - Identify geographic and temporal patterns in startup exits
 - Filter interactively by sector, country, and funding type
-
-> The Tableau workbook (`dashboard.twb`) is also included in the repository for local exploration.
-
+  
 ---
 
 ## Model Development and Selection
