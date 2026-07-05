@@ -124,7 +124,7 @@ The pipeline is organized into five stages:
 
 ### 4.1 One-Hot Encoding
 
-**Where used:** `Scripts/data_preprocessing.ipynb`  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb`  
 **What:** Nominal categorical variables (market sector, country code) were transformed into binary indicator columns using one-hot encoding.  
 **Why:** Machine learning models operate on numeric inputs. One-hot encoding is the standard transformation for nominal categorical variables because it makes no assumption about ordering or magnitude between categories — unlike integer label encoding, which would incorrectly imply that "sector 3" is greater than "sector 2". After cardinality reduction in feature engineering, the resulting number of one-hot columns was manageable.
 
@@ -132,7 +132,7 @@ The pipeline is organized into five stages:
 
 ### 4.2 Standard Scaling (Z-Score Normalization)
 
-**Where used:** `Scripts/data_preprocessing.ipynb`  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb`  
 **What:** Continuous numeric features (funding amount, funding rounds, fundraising duration) were scaled to zero mean and unit variance using `StandardScaler`.  
 **Why:** Logistic Regression uses gradient-based optimization, and its convergence behavior and coefficient magnitudes are sensitive to the scale of input features. Without scaling, a feature measured in millions of dollars would numerically dominate a feature measured as a binary 0/1 indicator, leading to poorly calibrated coefficients and slower convergence. Standard scaling places all features on a comparable numeric scale, ensuring that the model treats each feature's variance equally during optimization. Note: tree-based models (Random Forest, XGBoost) are scale-invariant, but scaling was applied uniformly for consistency across model comparisons.
 
@@ -140,7 +140,7 @@ The pipeline is organized into five stages:
 
 ### 4.3 Stratified Train-Test Split
 
-**Where used:** `Scripts/data_preprocessing.ipynb`  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb`  
 **What:** The labeled dataset (6,295 records) was divided into training and test sets using stratified sampling, preserving the original class ratio (approximately 59% acquired, 41% closed) in both subsets.  
 **Why:** The dataset has a class imbalance — acquired companies outnumber closed companies. Without stratification, random splitting could produce a test set with a different class distribution than the training set, making evaluation metrics unreliable. Stratified splitting guarantees that both subsets reflect the true population ratio, producing evaluation metrics that generalize to new data.
 
@@ -150,7 +150,7 @@ The pipeline is organized into five stages:
 
 ### 5.1 Stratified K-Fold Cross-Validation (k = 5)
 
-**Where used:** `main.ipynb` — model evaluation  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — model evaluation  
 **What:** Model performance was estimated using 5-fold cross-validation where the data was split into 5 folds, with each fold serving as the validation set once. The class ratio was preserved in every fold via stratification.  
 **Why:** With only 6,295 labeled examples, a single train-test split produces performance estimates that are sensitive to which specific records happen to fall in the test set. Cross-validation reduces this variance by averaging performance across five different splits, producing a more stable and reliable estimate of generalization performance. Stratification within each fold ensures the class imbalance does not distort any individual fold's evaluation.
 
@@ -158,7 +158,7 @@ The pipeline is organized into five stages:
 
 ### 5.2 Logistic Regression
 
-**Where used:** `main.ipynb` — primary classification model  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — primary classification model  
 **What:** A linear probabilistic classifier that models the log-odds of the binary outcome (acquired = 1, closed = 0) as a linear combination of input features. The model was trained with L2 regularization (Ridge penalty).  
 **Why (choice rationale):**
 - **Interpretability:** Each coefficient directly quantifies the direction and relative magnitude of a feature's association with the outcome. This is essential for answering the project's research questions (which sector, which funding type, which characteristics matter most).
@@ -170,7 +170,7 @@ The pipeline is organized into five stages:
 
 ### 5.3 Random Forest
 
-**Where used:** `main.ipynb` — candidate model (eliminated)  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — candidate model (eliminated)  
 **What:** An ensemble of decision trees, each trained on a bootstrap sample of the data with a random subset of features considered at each split. Predictions are made by majority vote across all trees.  
 **Why (choice rationale):**
 - Random Forest was evaluated as a strong baseline for tabular classification tasks due to its robustness to outliers, ability to model non-linear interactions, and implicit feature selection.
@@ -180,7 +180,7 @@ The pipeline is organized into five stages:
 
 ### 5.4 XGBoost (Extreme Gradient Boosting)
 
-**Where used:** `main.ipynb` — candidate model  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — candidate model  
 **What:** A gradient boosting framework that builds an ensemble of shallow decision trees sequentially, where each tree corrects the residual errors of the previous ensemble. Uses second-order gradient information and regularization terms for improved convergence and control over overfitting.  
 **Why (choice rationale):**
 - XGBoost is one of the most effective algorithms for structured/tabular classification tasks and was evaluated for its ability to capture complex non-linear relationships and feature interactions.
@@ -191,7 +191,7 @@ The pipeline is organized into five stages:
 
 ### 5.5 Hyperparameter Tuning
 
-**Where used:** `main.ipynb` — applied to Logistic Regression  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — applied to Logistic Regression  
 **What:** Systematic search over regularization strength (the `C` parameter) and solver settings for Logistic Regression.  
 **Why:** The default hyperparameters of any model are not necessarily optimal for a specific dataset. Tuning the regularization strength controls the bias-variance trade-off — a smaller C applies stronger regularization and may underfit, while a larger C applies weaker regularization and may overfit. Tuning identified a configuration that improved ROC-AUC from 0.7366 to 0.7396 and overall accuracy to 69.37%.
 
@@ -199,7 +199,7 @@ The pipeline is organized into five stages:
 
 ### 5.6 Evaluation Metrics
 
-**Where used:** `main.ipynb` — model comparison  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — model comparison  
 **What:** Five metrics were computed for each model:
 
 | Metric | Formula | What It Measures |
@@ -220,7 +220,7 @@ The pipeline is organized into five stages:
 
 ### 5.7 Coefficient-Based Feature Importance (Logistic Regression Explainability)
 
-**Where used:** `main.ipynb` — model interpretation  
+**Where used:** `Scripts/preprocessing_and_modeling.ipynb` — model interpretation  
 **What:** The magnitude and sign of each logistic regression coefficient were examined to determine which features had the strongest association with acquisition vs. closure.  
 **Why:** In Logistic Regression, each coefficient represents the change in the log-odds of the positive class (acquisition) for a one-unit increase in that feature, holding all other features constant. Larger absolute coefficient values indicate stronger association. This approach directly answers the project's research questions without needing additional explainability tools — the model is inherently interpretable, and its coefficients provide actionable, quantified insights about each predictor's contribution.
 

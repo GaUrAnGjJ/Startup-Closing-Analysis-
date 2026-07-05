@@ -31,11 +31,10 @@ Startup-Closing-Analysis-/
 │   ├── data_eda.ipynb                      # Step 2 — Exploratory data analysis & business insights
 │   ├── feature_Engineering.ipynb          # Step 3 — Market sector consolidation & derived features
 │   └── preprocessing_and_modeling.ipynb   # Step 4 — Encoding, scaling, model training, evaluation & explainability
-│
-├── dashboard.twb                           # Tableau workbook for visual exploration
-├── methodology.md                          # In-depth methodology documentation
-├── requirements.txt                        # Python dependencies
-└── README.md                               # Project documentation (this file)
+├── methodology.md                                       # In-depth statistical & ML methodology documentation
+├── Startup_Outcome_Analysis_Methodology_Summary.docx   # Methodology summary report (Word format)
+├── requirements.txt                                     # Python dependencies
+└── README.md                                            # Project documentation (this file)
 ```
 
 ---
@@ -136,6 +135,22 @@ Yet it is precisely those multi-round companies that disproportionately end up a
 The raw dataset contained over **350 distinct market categories** — far too many for a model to learn meaningful patterns from. A startup labeled "Social Commerce" and another labeled "E-commerce" are fundamentally similar, but the model would treat them as entirely unrelated.
 
 To address this, we applied domain knowledge to consolidate all 350+ categories into **17 coherent business sectors** (plus an "Other" bucket accounting for 8.44% of miscellaneous entries). Groups such as Software, SaaS, Cloud Computing, and Enterprise Software were merged into a single **Software & Cloud** sector. This reduced noise, improved interpretability, and gave the model a more meaningful signal to learn from.
+
+---
+
+## Dashboard Visualization
+
+An interactive Tableau dashboard accompanies this analysis, providing visual exploration of the funding landscape, sector distributions, and outcome patterns across acquired and closed startups.
+
+**[📊 View Interactive Dashboard on Tableau Public](https://public.tableau.com/views/dashboard_17832416309830/Dashboard2?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)**
+
+The dashboard enables stakeholders to:
+- Explore how funding amount and round count vary across acquisition outcomes
+- Compare market sector distributions between acquired and closed startups
+- Identify geographic and temporal patterns in startup exits
+- Filter interactively by sector, country, and funding type
+
+> The Tableau workbook (`dashboard.twb`) is also included in the repository for local exploration.
 
 ---
 
