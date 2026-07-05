@@ -22,19 +22,20 @@ The project combines **exploratory data analysis**, **statistical reasoning**, *
 Startup-Closing-Analysis-/
 │
 ├── data/
-│   ├── investments_VC.csv          # Raw Crunchbase VC investment dataset (54,294 records)
-│   ├── investments_VC_new.csv      # Cleaned and filtered dataset
-│   └── model_df.csv                # Final feature-engineered dataset for modeling
+│   ├── investments_VC.csv                  # Raw Crunchbase VC investment dataset (54,294 records)
+│   ├── investments_VC_new.csv              # Cleaned and filtered dataset
+│   └── model_df.csv                        # Final feature-engineered dataset for modeling
 │
 ├── Scripts/
-│   ├── data_cleaning.ipynb         # Step 1 — Data loading, deduplication, type casting & quality validation
-│   ├── data_eda.ipynb              # Step 2 — Exploratory data analysis & business insights
-│   ├── data_preprocessing.ipynb    # Step 3 — Encoding, scaling, train/test split
-│   └── feature_Engineering.ipynb  # Step 4 — Market sector consolidation & derived features
+│   ├── data_cleaning.ipynb                 # Step 1 — Data loading, deduplication, type casting & quality validation
+│   ├── data_eda.ipynb                      # Step 2 — Exploratory data analysis & business insights
+│   ├── feature_Engineering.ipynb          # Step 3 — Market sector consolidation & derived features
+│   └── preprocessing_and_modeling.ipynb   # Step 4 — Encoding, scaling, model training, evaluation & explainability
 │
-├── main.ipynb                      # End-to-end pipeline: model training, evaluation & explainability
-├── requirements.txt                # Python dependencies
-└── README.md                       # Project documentation (this file)
+├── dashboard.twb                           # Tableau workbook for visual exploration
+├── methodology.md                          # In-depth methodology documentation
+├── requirements.txt                        # Python dependencies
+└── README.md                               # Project documentation (this file)
 ```
 
 ---
@@ -87,14 +88,11 @@ pip install -r requirements.txt
 Execute each notebook sequentially to reproduce the full pipeline:
 
 | Step | Notebook | Purpose |
-|------|----------|---------|
+|------|----------|---------| 
 | 1 | `Scripts/data_cleaning.ipynb` | Clean raw data, remove duplicates, fix data types |
 | 2 | `Scripts/data_eda.ipynb` | Explore distributions and identify patterns |
 | 3 | `Scripts/feature_Engineering.ipynb` | Engineer market sectors and create model features |
-| 4 | `Scripts/data_preprocessing.ipynb` | Encode, scale, and split data |
-| 5 | `main.ipynb` | Train models, evaluate performance, and interpret results |
-
-> **Note:** All steps can also be run end-to-end from `main.ipynb`, which orchestrates the complete pipeline and contains model comparison tables and feature importance outputs.
+| 4 | `Scripts/preprocessing_and_modeling.ipynb` | Encode, scale, split data, train models, evaluate performance & interpret results |
 
 ---
 
